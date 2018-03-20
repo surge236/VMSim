@@ -1,0 +1,73 @@
+Project Report: Alexander Lewis
+
+11.1: Solution Description
+
+1) In order to ensure the correct physical address was created, I kept the logical address intact until such a time that one of my function that searched
+either the TLB, page table, or physical memory returned a valid frame number. At this point, I updated the logical address with the passed frame number.
+Since these functions would return an impossible value if no frame number was found, the resulting frame number can be presumed to be accurate.
+
+2) Page Table: My page table consisted of an array of unsigned shorts that was the size of the number of permitted pages. These shorts were maintained so 
+that their first byte was equal to a page number, and their second byte was equal to the frame that page referenced. Thus, by using bit shifting, 
+I could consolidate on storage space for this information.
+
+Physical memory:  My physical memory consisted of an array of unsigned chars whose size was equal to the number of frames multiplied by the size of each frame.
+These chars represented the byte of information that is available at each individual address.
+
+TLB: My TLB consisted of an array of unsigned shorts with a size equal to the predetermined max number of TLB entries. This array, along with a counter which
+kept track of the number of TLB entries allocated, consisted of shorts that were maintained so that their first byte was equal to a page, and their second
+byte was equal to the frame that page referenced. In order to operate the intended replacement algorithm for this structure, all new elements were added to the
+head of the array when added. Along with this, whenever check was performed on the TLB and a hit occurred, the value that caused the hit would be moved to the
+head of the array if the LRU algorithm was in effect. Using these assumptions, whenever a new value was added and the TLB was filled to capacity, the value that
+would be removed was the one placed at the tail end of the array.
+
+3) In terms of realism, the only aspect of this virtual memory system that I would say are unrealistic is both the page table size and the page fault handling.
+While it was vastly easier to implement a system with a page table of equal size to the physical memory, this also removed the need for a page replacement
+algorithm as well as simplified the method for determining the referenced frame on page faults (since it can typically be assumed the frame referenced is
+equivalent to the page, especially when the page table structure is kept in order by the entries page numbers). Additionally, page fault handling was
+drastically simplified through the use of the backing store. In these ways, the system is a decent simultation, but has many elements that are not realistic.
+
+4) I did not use the operators for bit masking, this is because I chose to use data types that resulted in excess bits being dropped from the stored data if
+they were unnecessary (ie if I needed a one byte page number from a short, I simply assigned the data to a char rather than bit masking). In terms of bit
+shifting, I used this consistently over the course of the project in order to manage the addresses. These uses were numerous but essentially boiled down to
+retrieving the page, frame, and offset numbers from addresses whenever necessary.
+
+5) Based on the replacement algorithm chosen by the user, the method of replacement obviously changed. However, in both the FIFO and LRU cases, the last
+element in the array was the one to be dropped. The only difference between these approaches was that, in the case of LRU, whenever a TLB hit occurred, the
+element that caused the hit would be moved to the head of the array.
+
+11.2: Generality and Performance Criteria
+
+1) I attempted to keep my solution as general as possible. There are some areas where I feel there could be some improvements to the readability of the code
+(mainly assigning new types for the physical and logical addresses, adding a type for bytes, etc) however, in while this might make it easier to expand the
+system, in terms of direct generality I believe it presents little to no detriment. I did late into development realize that due to my use of the smallest
+possible data types to store data within the system, it would be a bit more difficult than I would like change the length of addresses. If I were to redo
+or pickup this particular assignment again, I would likely attempt to generalize this scenario by creating a new type for addresses that was of the data
+type the addresses were meant to be (ex if they were meant to be 32-bit, the general "address" data type would be changed to unsigned int). Considering 
+I did present a global variable that tracks the number of bytes in the addresses, this solution would allow for simple address length changes. That said, 
+the current implementation also assumes the address is always split in half in terms of components (component one is assumed to be MSB and component two LSB) 
+therefore, it may also be worth reworking much of the code to allow the individual components to be of a user presented length (most likely by defining the 
+bits per component in the global variables).
+
+2) Incredibly easy, I implemented a global variable for the TLB size that can be changed to any value the user chooses. I did fail to add any catches for a
+TLB of extraordinarily small sizes (one or zero) however, I believe this can be justified due to the chance of such a solution being necessary.
+
+3) Yes, at no point during the execution of the program are pages from the BACKING_STORE loaded unless such a scenario is absolutely unavoidable.
+
+4) Technically yes, the system simply takes addresses as a binary number and splits them into their individual elements when necessary, therefore, as long
+as neither of the addresses exceed the 16-bit length, they should be handled correctly. That said, if the individual elements in the address were intended to
+be a shorter length (such as the offset being 4-bits) this would prevent the system from handling them (the system assumes the addresses contain two values
+of equal length, a change to this assumption would be fairly difficult to handle within the current scope of the system).
+
+11.3: Miscellaneous Factors
+
+1) I believe the individual elements of my code are fairly elegant. There are definitely spaces for improvement however. For example, I could have created
+a header file in order to keep the function declarations seperate from my main file. Also, there are some global elements I could have combined into a singular
+structure (such as the size counters for my global arrays). Also, I could likely create a few new functions in order to clean up my main function a bit, the
+current handling is essentially, difficult to perform opertaions are handled by functions and simple console output like operations are simply handled by
+the main function. This resulted in the main function being a bit haphazard near the end of implementation.
+
+2) In terms of innovative solutions, the only aspect I used that technically meets that description is my use of the smallest possible data types as well as my
+heavy focus on bit shifting over the course of implementation. That said, I'm not sure if such an implementation strategy really meets the definition of
+innovative.
+
+3) I used no outside sources for any of my work. I did look back on some old software construction assignments however I assume that is not necessary to include.
